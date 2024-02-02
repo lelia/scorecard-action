@@ -85,11 +85,9 @@ func Run(o *options.Options) error {
 
 	// Process each workflow file.
 	for _, workflow := range workflowFilesDeprecated {
-		log.Printf("Processing workflow: %s", workflow)
 		o.WorkflowFiles = append(o.WorkflowFiles, getWorkflowPath(workflowBase, workflow))
 	}
 	o.WorkflowFiles = append(o.WorkflowFiles, workflowFilePath)
-	log.Printf()
 
 	// Process each repository.
 	// TODO: Capture repo access errors
