@@ -22,18 +22,17 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/ossf/scorecard-action/install/github"
 	"github.com/ossf/scorecard-action/install/options"
 )
 
 const (
-	commitMessage          = ".github: Add scorecard workflow"
-	pullRequestBranch      = "scorecard-action-install"
-	workflowBase           = ".github/workflows"
-	workflowFile           = "scorecards.yml"
-	workflowFileDeprecated = "scorecards-analysis.yml"
+	commitMessage     = ".github: Add scorecard workflow"
+	pullRequestBranch = "scorecard-action-install"
+	workflowBase      = ".github/workflows"
+	workflowFile      = "scorecard.yml"
 )
 
 var (
@@ -42,12 +41,11 @@ var (
 
 To report any issues with this tool, see [here](https://github.com/ossf/scorecard-action).
 `
-
-	pullRequestTitle = commitMessage
-	workflowFilePath = path.Join(workflowBase, workflowFile)
-	workflowFiles    = []string{
-		workflowFilePath,
-		path.Join(workflowBase, workflowFileDeprecated),
+	pullRequestTitle        = commitMessage
+	workflowFilePath        = getWorkflowPath(workflowBase, workflowFile)
+	workflowFilesDeprecated = []string{
+		"scorecards-analysis.yml",
+		"scorecards.yml",
 	}
 )
 
@@ -80,16 +78,24 @@ func Run(o *options.Options) error {
 	}
 
 	// Get yml file into byte array.
-	workflowContent, err := os.ReadFile(o.ConfigPath)
+	workflowContent, err := os.ReadFile(workflowFilePath)
 	if err != nil {
 		return fmt.Errorf("reading scorecard workflow file: %w", err)
 	}
+
+	// Process each workflow file.
+	for _, workflow := range workflowFilesDeprecated {
+		log.Printf("Processing workflow: %s", workflow)
+		o.WorkflowFiles = append(o.WorkflowFiles, getWorkflowPath(workflowBase, workflow))
+	}
+	o.WorkflowFiles = append(o.WorkflowFiles, workflowFilePath)
+	log.Printf()
 
 	// Process each repository.
 	// TODO: Capture repo access errors
 	for _, repoName := range o.Repositories {
 		log.Printf("Processing repository: %s", repoName)
-		err := processRepo(ctx, gh, o.Owner, repoName, workflowContent)
+		err := processRepo(ctx, gh, o.Owner, repoName, workflowContent, o.WorkflowFiles)
 		if err != nil {
 			log.Printf("processing repository: %+v", err)
 		}
@@ -103,11 +109,19 @@ func Run(o *options.Options) error {
 	return nil
 }
 
+func getWorkflowPath(
+	baseDir string,
+	workflowFile string,
+) string {
+	return filepath.Join(baseDir, workflowFile)
+}
+
 func processRepo(
 	ctx context.Context,
 	gh *github.Client,
 	owner, repoName string,
 	workflowContent []byte,
+	workflowFiles []string,
 ) error {
 	// Get repo metadata.
 	log.Printf("getting repo metadata for %s", repoName)

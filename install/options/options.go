@@ -17,15 +17,7 @@
 // Package options provides installation options for the scorecard action.
 package options
 
-import (
-	"errors"
-	"path/filepath"
-)
-
-const (
-	configDir      = "starter-workflows/code-scanning"
-	configFilename = "scorecards.yml"
-)
+import "errors"
 
 var errOwnerNotSpecified = errors.New("owner not specified")
 
@@ -33,6 +25,9 @@ var errOwnerNotSpecified = errors.New("owner not specified")
 type Options struct {
 	// Scorecard GitHub Action configuration path
 	ConfigPath string
+
+	// Scorecard GitHub Action workflow files
+	WorkflowFiles []string
 
 	// GitHub org/repo owner
 	Owner string
@@ -44,7 +39,6 @@ type Options struct {
 // New creates a new instance of installation options.
 func New() *Options {
 	opts := &Options{}
-	opts.ConfigPath = GetConfigPath()
 	return opts
 }
 
@@ -55,10 +49,4 @@ func (o *Options) Validate() error {
 	}
 
 	return nil
-}
-
-// GetConfigPath returns the local path for the scorecard action config file.
-// TODO: Consider making this configurable.
-func GetConfigPath() string {
-	return filepath.Join(configDir, configFilename)
 }
