@@ -37,10 +37,12 @@ const (
 
 var (
 	branchReference        = fmt.Sprintf("refs/heads/%s", pullRequestBranch)
-	pullRequestDescription = `This pull request was generated using the installer tool for scorecard's GitHub Action.
+	pullRequestDescription = `This pull request was generated using the installer tool for [Scorecard](https://github.com/ossf/scorecard)'s [GitHub Action](https://github.com/ossf/scorecard-action).
 
-To report any issues with this tool, see [here](https://github.com/ossf/scorecard-action).
-`
+	Scorecard helps open source maintainers improve security best practices by running a series of automated checks.
+
+	To report any issues with this tool, see [here](https://github.com/ossf/scorecard-action/issues/new).
+	`
 	pullRequestTitle        = commitMessage
 	workflowFilePath        = getWorkflowPath(workflowBase, workflowFile)
 	workflowFilesDeprecated = []string{
